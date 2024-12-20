@@ -1,68 +1,27 @@
-name: Setup Chrome Remote Desktop
+name: Python App Workflow
 
 on:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - main  # Change to your default branch if different
 
 jobs:
-  setup:
+  run-python-script:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Set up User
-      run: |
-        echo "Creating User and Setting it up"
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-        # Variables
-        USERNAME=user
-        PASSWORD=root
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'  # Specify your desired Python version
 
-        # Create user and configure
-        sudo useradd -m $USERNAME
-        sudo adduser $USERNAME sudo
-        echo "$USERNAME:$PASSWORD" | sudo chpasswd
-        sudo sed -i 's/\/bin\/sh/\/bin\/bash/g' /etc/passwd
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Install dependencies if you have a requirements file
 
-        echo "User Created and Configured"
-
-    - name: Install Chrome Remote Desktop
-      run: |
-        echo "Installing Chrome Remote Desktop and Desktop Environment"
-
-        # Update and install CRD
-        sudo apt-get update
-        wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
-        sudo dpkg --install chrome-remote-desktop_current_amd64.deb || sudo apt-get install -f -y
-
-        # Install XFCE4 Desktop Environment
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xfce4 desktop-base xfce4-terminal
-        echo "exec /etc/X11/Xsession /usr/bin/xfce4-session" | sudo tee /etc/chrome-remote-desktop-session
-        sudo apt-get remove -y gnome-terminal
-        sudo apt-get install -y xscreensaver
-        sudo systemctl disable lightdm.service
-
-        # Install Google Chrome
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo dpkg --install google-chrome-stable_current_amd64.deb || sudo apt-get install -f -y
-
-        # Install other tools
-        sudo apt-get install -y nautilus nano
-
-        echo "Installation Completed"
-
-    - name: Configure Chrome Remote Desktop
-      run: |
-        # Variables
-        AUTH_CODE="DISPLAY= /opt/google/chrome-remote-desktop/start-host --code=\"4/0AanRRruxUkD2l4b6TDe4kxUXvnxjEh_gz60hA3cBYo6aiF5sg1-BtJF44j9ujMJONhbbTQ\" --redirect-url=\"https://remotedesktop.google.com/_/oauthredirect\" --name=$(hostname)"
-        PIN=123394
-        USERNAME=user
-
-        # Add user to CRD group
-        sudo adduser $USERNAME chrome-remote-desktop
-
-        # Finish setup
-        su - $USERNAME -c "$AUTH_CODE --pin=$PIN"
-
-        echo "Finished Successfully"
+      - name: Run app.py
+        run: python app.py  # Replace with the path to your script if necessary
