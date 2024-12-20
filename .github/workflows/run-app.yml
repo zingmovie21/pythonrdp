@@ -1,27 +1,39 @@
-name: Run Python App
+name: Windows 10 RDP Setup with Chrome Remote Desktop
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 
 jobs:
-  run-app:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 9999
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Install Dependencies
+      - name: Download Chrome Remote Desktop Installer
         run: |
-          python -m pip install --upgrade pip
+          Invoke-WebRequest https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb -OutFile chrome-remote-desktop.deb
 
-      - name: Run Application
-        run: python app.py
+      - name: Install Dependencies (Chocolatey, Google Chrome, etc.)
+        run: |
+          choco install googlechrome -y
+          choco install chrome-remote-desktop -y
+
+      - name: Enable RDP (Remote Desktop Protocol) and Disable NLA (Network Level Authentication)
+        run: |
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 0
+
+      - name: Set Chrome Remote Desktop Host Configuration
+        run: |
+          $env:CRD_COMMAND = "DISPLAY= /opt/google/chrome-remote-desktop/start-host --code='4/0AanRRruXG7_f0lm5l3odlg2dw1dA5-ZpZTNLlCbSY26oQxvS48wgwXsLrSHjNP0tPsj1vg' --redirect-url='https://remotedesktop.google.com/_/oauthredirect' --name=$(hostname)"
+          Write-Host "Starting Chrome Remote Desktop..."
+          .\chrome-remote-desktop\chrome-remote-desktop.exe start-host --code="4/0AanRRruXG7_f0lm5l3odlg2dw1dA5-ZpZTNLlCbSY26oQxvS48wgwXsLrSHjNP0tPsj1vg" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname)
+
+      - name: Display Chrome Remote Desktop Connection URL
+        run: |
+          Write-Host "Chrome Remote Desktop connection URL: https://remotedesktop.google.com/access/"
+          Write-Host "To connect, visit this URL and authenticate using your credentials."
+
+      - name: Finish Setup
+        run: |
+          Write-Host "Chrome Remote Desktop setup completed successfully."
