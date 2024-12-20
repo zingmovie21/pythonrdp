@@ -98,8 +98,8 @@ printf "\\n$g$b    Installation Completed $endc$enda\\n\\n" >&2"""
     print("Finished Successfully")
 
 # Input details
-username = "curseofwithcer"
-password = "curseofwitcher"
+username = "user"
+password = "root"
 crp_command = """DISPLAY= /opt/google/chrome-remote-desktop/start-host --code="4/0AanRRrtSQdTkGDFyLl3JmgsPQZuQqHgWBLPWkj0k3EOTE9ye7V4Zf3awKXdNAw9ZgmeT_Q" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname)"""
 pin = 149149
 
