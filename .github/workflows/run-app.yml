@@ -1,0 +1,30 @@
+name: Run app.py
+
+on:
+  push:
+    branches:
+      - main  # Trigger this workflow when pushing to the 'main' branch
+  workflow_dispatch:  # Allow manual triggering of the workflow
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest  # Use a Linux runner
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3  # Check out the repository code
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9  # Specify the Python version
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sudo wget nano  # Install required packages
+
+      - name: Run app.py
+        run: |
+          sudo chmod +x app.py  # Make the script executable
+          python3 app.py  # Execute the script
